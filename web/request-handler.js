@@ -1,5 +1,6 @@
 var path = require('path');
 var archive = require('../helpers/archive-helpers');
+// var httpHelper = require('../helpers/http-helpers');
 var fs = require('fs');
 var urlParser = require('url');
 var querystring = require('querystring');
@@ -22,6 +23,8 @@ var responseHTML = function(res, htmlFile){
 };
 
 var redirectTo = function(res, url, status){
+  status = status || 301;
+  console.log('REDIRECT', url);
   res.writeHead(status, {
     'Location': url
   });
@@ -32,17 +35,19 @@ exports.handleRequest = function (req, res) {
 
   var pathname = urlParser.parse(req.url).pathname.split('/');
 
+  console.log("PAGE", req.url);
+
   if(req.method === 'GET'){
 
     if(pathname[1] === 'page'){
-
+      console.log("LOADING ARCH");
       var url = pathname.slice(2).join('/');
 
       archive.getArchivedSite(url, function(filePath){
         if(filePath){
           responseHTML(res, filePath);
         } else {
-          redirectTo(res, 'http://127.0.0.1:8080/loading', 301);
+          redirectTo(res, 'http://127.0.0.1:8080/loading');
         }
       });
 
@@ -68,20 +73,16 @@ exports.handleRequest = function (req, res) {
 
       var url = querystring.parse(data).url;
 
-      console.log(url);
-
       archive.getArchivedSite(url, function(archivedPath){
-        console.log(archivedPath);
         if(archivedPath){
           // redirect to page archived url
-          console.log('LOAD PAGE');
-          redirectTo(res, 'http://127.0.0.1:8080/page/' + url, 200);
+          redirectTo(res, 'http://127.0.0.1:8080/page/' + url);
         } else {
           console.log('WRITE TO FILE');
           // write to sites.txt
           archive.addUrlToList(url);
           // redirect to loading
-          redirectTo(res, 'http://127.0.0.1:8080/loading', 301);
+          redirectTo(res, 'http://127.0.0.1:8080/loading');
         }
       });
     });

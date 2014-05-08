@@ -33,8 +33,14 @@ exports.isUrlInList = function(){
   // check if site is in file
 };
 
-exports.addUrlToList = function(){
-  // add site to file
+exports.addUrlToList = function(url){
+  fs.open(this.paths.list, 'a', function(err, fd) {
+    if (!err) {
+      fs.write(fd, url + '\n', null, null, null, function() {
+        fs.close(fd);
+      });
+    }
+  });
 };
 
 exports.isUrlArchived = function(url, callback) {
@@ -45,7 +51,6 @@ exports.getArchivedSite = function(url, callback) {
   var that = this;
   this.isUrlArchived(url, function(exists) {
     if (exists) {
-      console.log(path.join(that.paths.archivedSites, url));
       callback(path.join(that.paths.archivedSites, url));
     } else callback(null);
   });
