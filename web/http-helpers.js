@@ -16,18 +16,18 @@ exports.response404 = function(res){
 };
 
 exports.serveAssets = function(res, asset) {
-  fs.readFile(path.resolve(__dirname,'public', asset), function(error, content) {
+  fs.readFile(this.paths.archivedSites + asset, function(error, content) {
     if (error) {
       this.response404(res);
     } else {
-      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.writeHead(200, this.headers);
       res.end(content, 'utf-8');
     }
   });
 };
 
 exports.redirect = function(res, url, status){
-  status = status || 301;
+  status = status || 302;
   res.writeHead(status, {
     'Location': url
   });
