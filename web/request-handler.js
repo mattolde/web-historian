@@ -24,7 +24,6 @@ var responseHTML = function(res, htmlFile){
 
 var redirectTo = function(res, url, status){
   status = status || 301;
-  console.log('REDIRECT', url);
   res.writeHead(status, {
     'Location': url
   });
@@ -35,12 +34,9 @@ exports.handleRequest = function (req, res) {
 
   var pathname = urlParser.parse(req.url).pathname.split('/');
 
-  console.log("PAGE", req.url);
-
   if(req.method === 'GET'){
 
     if(pathname[1] === 'page'){
-      console.log("LOADING ARCH");
       var url = pathname.slice(2).join('/');
 
       archive.getArchivedSite(url, function(filePath){
@@ -68,7 +64,6 @@ exports.handleRequest = function (req, res) {
       data += chunk.toString();
     });
 
-
     req.on('end', function(){
 
       var url = querystring.parse(data).url;
@@ -78,7 +73,6 @@ exports.handleRequest = function (req, res) {
           // redirect to page archived url
           redirectTo(res, 'http://127.0.0.1:8080/page/' + url);
         } else {
-          console.log('WRITE TO FILE');
           // write to sites.txt
           archive.addUrlToList(url);
           // redirect to loading

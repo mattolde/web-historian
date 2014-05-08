@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var _ = require('underscore');
+var httpRequest = require('http-request');
 
 /*
  * You will need to reuse the same paths many times over in the course of this sprint.
@@ -25,19 +26,31 @@ exports.initialize = function(pathsObj){
 // The following function names are provided to you to suggest how you might
 // modularize your code. Keep it clean!
 
-exports.readListOfUrls = function(){
+exports.readListOfUrls = function(callback){
   // read sites file
+  fs.readFile(this.paths.list, {encoding: 'utf-8'}, function(err, data) {
+    if (err) throw err;
+    callback(data);
+  });
 };
 
-exports.isUrlInList = function(){
+exports.isUrlInList = function(url, callback){
   // check if site is in file
+  this.readListOfUrls(function(data) {
+    data = data.split('\n');
+    callback(_.contains(data, url));
+  });
 };
 
 exports.addUrlToList = function(url){
-  fs.open(this.paths.list, 'a', function(err, fd) {
-    if (!err) {
-      fs.write(fd, url + '\n', null, null, null, function() {
-        fs.close(fd);
+  var self = this;
+  this.isUrlInList(url, function(exists) {
+    if (!exists) {
+      fs.open(self.paths.list, 'a', function(err, fd) {
+        if (err) throw err;
+        fs.write(fd, url + '\n', null, null, null, function() {
+          fs.close(fd);
+        });
       });
     }
   });
@@ -57,5 +70,34 @@ exports.getArchivedSite = function(url, callback) {
 };
 
 exports.downloadUrls = function(){
-  // save to archives
+
+  var self = this;
+
+  this.readListOfUrls(function(data){
+    data = data.split('\n');
+
+    _(data).each(function(url) {
+
+      self.isUrlArchived(url, function(exists){
+        if(!exists){
+
+          httpRequest.get('http://' + url, function (err, res) {
+            if (err) {
+              console.error(err);
+              return;
+            }
+
+            var html = res.buffer.toString();
+
+            // create a archive file
+
+            fs.writeFile(self.paths.archivedSites + '/' +url, html);
+
+          });
+        }
+      });
+    });
+
+  });
+
 };

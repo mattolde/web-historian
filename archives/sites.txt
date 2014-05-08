@@ -1,3 +1,6 @@
 www.google.com
 www.bbc.com
 www.hackreactor.com
+www.yahoo.com
+www.cnn.com
+www.macrumors.com
